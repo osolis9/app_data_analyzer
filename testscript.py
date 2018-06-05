@@ -2,9 +2,6 @@
 import os
 import re
 
-update_tld_names()
-
-
 names = ['omar', 'solis', 'scott', 'buttinger']
 
 
