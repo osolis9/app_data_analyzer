@@ -1,7 +1,5 @@
 #!/usr/bin/python
 import os
-from tld import get_tld
-from tld.utils import update_tld_names
 import re
 
 update_tld_names()
