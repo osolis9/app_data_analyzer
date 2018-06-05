@@ -8,7 +8,7 @@ pii_types = ['omar', 'solis', 'scott', 'buttinger','936-404-8305','male','650-65
 
 pii_apps = set([])
 pii_hosts = set([])
-pii_edges = []
+pii_edges = set([])
 
 for filename in os.listdir(os.curdir):
 	if not filename.endswith(".trace"):
@@ -63,7 +63,7 @@ for filename in os.listdir(os.curdir):
 
 				pii_apps.add(app_name)
 				pii_hosts.add(host)
-				pii_edges.append((app_name,host))
+				pii_edges.add((app_name,host))
 
 				if inRequest:
 					message = "PII sent in request from " + app_name +  ' to ' + host
@@ -104,6 +104,7 @@ for filename in os.listdir(os.curdir):
 
 pii_apps = list(pii_apps)
 pii_hosts = list(pii_hosts)
+pii_edges = list(pii_edges)
 	
 print('Results:')
 print(len(pii_apps))
