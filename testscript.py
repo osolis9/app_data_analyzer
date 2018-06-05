@@ -2,9 +2,17 @@
 import os
 import re
 
+import networkx as nx
+from networkx.algorithms import bipartite
+import matplotlib.pyplot as plt
+
 names = ['omar', 'solis', 'scott', 'buttinger']
+emails = ['omarsolis4@gmail.com', 'sbuttinger19@gmail.com']
 
-
+B = nx.Graph()
+apps = []
+hosts = []
+edges = []
 for filename in os.listdir(os.curdir):
 	if not filename.endswith(".trace"):
 		continue
@@ -12,6 +20,7 @@ for filename in os.listdir(os.curdir):
 		f1 = f.readlines()
 
 	app_name = filename.split('.')[0]
+	apps.append(app_name)
 	inRequest = False
 	inResponse = False
 	message_body = ""
@@ -41,6 +50,12 @@ for filename in os.listdir(os.curdir):
 				matches = top_level_pattern.findall(host)
 				if len(matches) != 0:
 					host = matches[0]
+				if host not in hosts:
+					hosts.append(host)
+					#print(host)
+				edge = (app_name, host)
+				if edge not in edges:
+					edges.append(edge)
 
 				inSocket = False
 
@@ -91,4 +106,24 @@ for filename in os.listdir(os.curdir):
 		if line.startswith('Response-Body:<<'):
 			inResponse = True
 	
+B.add_nodes_from(apps, bipartite=0)
+B.add_nodes_from(hosts, bipartite=1)
 
+B.add_edges_from(edges)
+
+print(nx.is_connected(B))
+
+l, r = nx.bipartite.sets(B)
+pos = {}
+
+#pos.update((node, (1, index)) for index, node in enumerate(l))
+pos.update((node, [1, i*(i/2)]) for i,node in enumerate(l))
+pos.update((node, (2, index*(index/90))) for index, node in enumerate(r))
+print(len(apps))
+print(len(hosts))
+print(len(edges))
+nx.draw(B, pos=pos, with_labels=True, node_size=10, linewidths=.2, width=.2, font_size=3)
+#nx.draw(B)
+#nx.draw_networkx(B, pos=pos, node_size=100)
+plt.savefig("graph.pdf")
+plt.show()
