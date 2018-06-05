@@ -2,14 +2,14 @@
 import os
 import re
 
-<<<<<<< HEAD
+
 import networkx as nx
 from networkx.algorithms import bipartite
 import matplotlib.pyplot as plt
 
 names = ['omar', 'solis', 'scott', 'buttinger']
 emails = ['omarsolis4@gmail.com', 'sbuttinger19@gmail.com']
-=======
+
 pii_types = ['omar', 'solis', 'scott', 'buttinger','936-404-8305','male','650-656-0106',
 			'latitude','longitude','omarsolis4@gmail.com','sbuttinger19@gmail.com',
 			'1996-04-06','04061996','1994-12-25','12251994','9364048305','6506560106']
@@ -17,9 +17,10 @@ pii_types = ['omar', 'solis', 'scott', 'buttinger','936-404-8305','male','650-65
 pii_apps = set([])
 pii_hosts = set([])
 pii_edges = set([])
->>>>>>> 0255e529415794a3da9b11e4f24788c7a892f291
+
 
 B = nx.Graph()
+B_sensitive = nx.Graph()
 apps = []
 hosts = []
 edges = []
@@ -121,9 +122,9 @@ for filename in os.listdir(os.curdir):
 
 		if line.startswith('Response-Body:<<'):
 			inResponse = True
-<<<<<<< HEAD
+
 	
-B.add_nodes_from(apps, bipartite=0)
+"""B.add_nodes_from(apps, bipartite=0)
 B.add_nodes_from(hosts, bipartite=1)
 
 B.add_edges_from(edges)
@@ -143,15 +144,41 @@ nx.draw(B, pos=pos, with_labels=True, node_size=10, linewidths=.2, width=.2, fon
 #nx.draw(B)
 #nx.draw_networkx(B, pos=pos, node_size=100)
 plt.savefig("graph.pdf")
-plt.show()
-=======
+plt.show()"""
+
+
 
 pii_apps = list(pii_apps)
 pii_hosts = list(pii_hosts)
 pii_edges = list(pii_edges)
+
+B_sensitive.add_nodes_from(pii_apps, bipartite=0)
+B_sensitive.add_nodes_from(pii_hosts, bipartite=1)
+
+B_sensitive.add_edges_from(pii_edges)
+
+l = {n for n, d in B_sensitive.nodes(data=True) if d['bipartite']==0}
+r = set(B_sensitive) - l
+
+
+
+pos = {}
+
+#pos.update((node, (1, index)) for index, node in enumerate(l))
+pos.update((node, [1, i*(i/10)]) for i,node in enumerate(l))
+pos.update((node, (2, index)) for index, node in enumerate(r))
+
+nx.draw(B_sensitive, pos=pos, with_labels=True, node_size=10, linewidths=.2, width=.2, font_size=6)
+#nx.draw(B)
+#nx.draw_networkx(B, pos=pos, node_size=100)
+plt.savefig("graph_pii.pdf")
+plt.show()
+
+
+
 	
 print('Results:')
 print(len(pii_apps))
 print(len(pii_hosts))
 print(len(pii_edges))
->>>>>>> 0255e529415794a3da9b11e4f24788c7a892f291
+
