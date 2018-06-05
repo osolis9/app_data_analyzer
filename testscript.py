@@ -165,7 +165,7 @@ r = set(B_sensitive) - l
 pos = {}
 
 #pos.update((node, (1, index)) for index, node in enumerate(l))
-pos.update((node, [1, i*(i/10)]) for i,node in enumerate(l))
+pos.update((node, [1, i*(2.5)]) for i,node in enumerate(l))
 pos.update((node, (2, index)) for index, node in enumerate(r))
 
 nx.draw(B_sensitive, pos=pos, with_labels=True, node_size=10, linewidths=.2, width=.2, font_size=6)
