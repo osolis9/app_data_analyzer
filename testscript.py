@@ -1,5 +1,11 @@
 #!/usr/bin/python
 import os
+from tld import get_tld
+from tld.utils import update_tld_names
+import re
+
+update_tld_names()
+
 
 names = ['omar', 'solis', 'scott', 'buttinger']
 
@@ -17,19 +23,37 @@ for filename in os.listdir(os.curdir):
 	method = ""
 	protocol = ""
 	host = ""
+	inSocket = False
 	for line in f1:
+		
 		#gets these for each post.. Each new post starts with these..
 		if line.startswith("Method: "):
-			method = line.split(': ')[1]
+			method = line.split(': ')[1][:-1] #I remove the /n at the end
 
 		if line.startswith("Protocol: "):
-			protocol = line.split(': ')[1]
+			protocol = line.split(': ')[1][:-1]
 
 		if line.startswith("Host: "):
-			host = line.split(": ")[1]
+			host = line.split(": ")[1][:-1]
+			ip = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", host) ##checks to see if its a socket
+			top_level = re.match(r"[^.]*\.[^.]{2,3}(?:\.[^.]{2,3})?$", host)
+			top_level_pattern = re.compile("[^.]*\.[^.]{2,3}(?:\.[^.]{2,3})?$")
+
+			if ip:
+				inSocket = True
+			else:
+
+				matches = top_level_pattern.findall(host)
+				if len(matches) != 0:
+					host = matches[0]
+
+				inSocket = False
 
 
-		
+		#dont do data parsing if the message was sent to a socket and not a server
+		#I dont really understand when the host is just an IP so for now I'm not analyzing that
+		if inSocket:
+			continue
 		
 		#have request/response fully built
 		if (inResponse and line.startswith("--EOF")) or (inRequest and line.startswith("--EOF")):
