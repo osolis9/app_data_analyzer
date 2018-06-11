@@ -100,7 +100,7 @@ for filename in os.listdir(os.curdir):
 					# print(message_body.lower())
 					# print(message)
 
-				# print(message)
+				print(message)
 
 			
 			##restart response/request body
@@ -160,8 +160,6 @@ B_sensitive.add_edges_from(pii_edges)
 l = {n for n, d in B_sensitive.nodes(data=True) if d['bipartite']==0}
 r = set(B_sensitive) - l
 
-print(l)
-
 
 pos = OrderedDict({})
 
@@ -174,8 +172,6 @@ d = [(d[node]+1) * 30 for node in B_sensitive.nodes()]
 # print(d)
 
 nx.draw(B_sensitive, pos=pos, with_labels=False, node_size=d, linewidths=.2, width=.2, font_size=6)
-print(pos)
-print('TEST\n\n\n\n')
 
 for node in list(pos.items()):
 	if node[0] in pii_apps:
