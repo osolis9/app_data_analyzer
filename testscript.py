@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import os
 import re
-
+from collections import OrderedDict
 
 import networkx as nx
 from networkx.algorithms import bipartite
@@ -20,7 +20,7 @@ pii_edges = set([])
 
 
 B = nx.Graph()
-B_sensitive = nx.Graph()
+B_sensitive = nx.OrderedGraph()
 apps = []
 hosts = []
 edges = []
@@ -100,7 +100,7 @@ for filename in os.listdir(os.curdir):
 					# print(message_body.lower())
 					# print(message)
 
-				print(message)
+				# print(message)
 
 			
 			##restart response/request body
@@ -160,25 +160,34 @@ B_sensitive.add_edges_from(pii_edges)
 l = {n for n, d in B_sensitive.nodes(data=True) if d['bipartite']==0}
 r = set(B_sensitive) - l
 
+print(l)
 
 
-pos = {}
+pos = OrderedDict({})
 
 #pos.update((node, (1, index)) for index, node in enumerate(l))
 pos.update((node, [1, i*(2.5)]) for i,node in enumerate(l))
 pos.update((node, (2, index)) for index, node in enumerate(r))
 
-nx.draw(B_sensitive, pos=pos, with_labels=True, node_size=10, linewidths=.2, width=.2, font_size=6)
-#nx.draw(B)
-#nx.draw_networkx(B, pos=pos, node_size=100)
-plt.savefig("graph_pii.pdf")
+d = nx.degree(B_sensitive)
+d = [(d[node]+1) * 30 for node in B_sensitive.nodes()]
+# print(d)
+
+nx.draw(B_sensitive, pos=pos, with_labels=False, node_size=d, linewidths=.2, width=.2, font_size=6)
+print(pos)
+print('TEST\n\n\n\n')
+
+for node in list(pos.items()):
+	if node[0] in pii_apps:
+		plt.text(node[1][0]-0.05,node[1][1],s=node[0],horizontalalignment='right',fontsize=10,verticalalignment='center')
+	else:
+		plt.text(node[1][0]+0.05,node[1][1],s=node[0],fontsize=7,verticalalignment='center')
+plt.xlim((0.5,2.5))
+plt.savefig("graph_pii.png",dpi=300)
 plt.show()
-
-
 
 	
 print('Results:')
 print(len(pii_apps))
 print(len(pii_hosts))
 print(len(pii_edges))
-
