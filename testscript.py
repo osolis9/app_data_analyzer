@@ -179,7 +179,7 @@ for node in list(pos.items()):
 	else:
 		plt.text(node[1][0]+0.05,node[1][1],s=node[0],fontsize=7,verticalalignment='center')
 plt.xlim((0.5,2.5))
-plt.savefig("graph_pii.png",dpi=300)
+# plt.savefig("graph_pii.png",dpi=300)
 plt.show()
 
 	
