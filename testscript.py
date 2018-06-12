@@ -3,6 +3,7 @@ import os
 import re
 from collections import OrderedDict
 from collections import defaultdict
+import numpy as np
 
 import networkx as nx
 from networkx.algorithms import bipartite
@@ -14,7 +15,51 @@ emails = ['omarsolis4@gmail.com', 'sbuttinger19@gmail.com']
 pii_types = ['omar', 'solis', 'scott', 'buttinger','936-404-8305','male','650-656-0106',
 			'latitude','longitude','omarsolis4@gmail.com','sbuttinger19@gmail.com',
 			'1996-04-06','04061996','1994-12-25','12251994','9364048305','6506560106', 
-			'phone', 'email', 'zipcode', 'birthday']
+			'phone-num','phonenum', 'email', 'zipcode', 'birthday','phone_num',
+			'username']
+
+# pii categories
+email_pii = ['email','omarsolis4@gmail.com','sbuttinger19@gmail.com','gmail']
+birthday_pii = ['1996-04-06','04061996','1994-12-25','12251994','birthday']
+phone_pii = ['9364048305','6506560106','936-404-8305','650-656-0106','phone-num','phonenum',
+			 'phone_num']
+location_pii = ['latitude','longitude']
+gender_pii = ['male']
+name_pii = ['omar', 'solis', 'scott', 'buttinger','username']
+zip_pii = ['zipcode','94305','94306','94309','zip-code','zip_code']
+
+
+email_cnt = 0
+birthday_cnt = 0
+phone_cnt = 0
+location_cnt = 0
+gender_cnt = 0
+name_cnt = 0
+zip_cnt = 0
+
+
+# app categories
+
+business = ['adobe','adp','indeed']
+entertainment = ['sling drift','unicorn','colorfy']
+health_fitness = ['myfitnesspal','fitbit','sweatcoin']
+lifestyle = ['zillow','horoscope+ 2018','ebay']
+medical = ['leafly','ovia pregnancy','mychart']
+social = ['pinterest','groupme','findmyfamilyfriendsphone']
+navigation = ['geocaching','moovit','transit']
+photo_video = ['snapchat','musically','youtube']
+
+app_categories = ['business','entertainment','health & fitness','lifestyle','medical','social','navigation','photo & video']
+
+business_cnt = 0
+entertainment_cnt = 0
+health_fitness_cnt = 0
+lifestyle_cnt = 0
+medical_cnt = 0
+social_cnt = 0
+navigation_cnt = 0
+photo_video_cnt = 0
+
 
 
 third_party = ['smaato.net', 'tlnk.io', 'amazonaws.com', 'serving-sys.com', 'appbaqend.com',
@@ -93,6 +138,10 @@ for filename in os.listdir(os.curdir):
 		if inSocket:
 			continue
 
+		# outlook.com requests are caused by background email refreshes so we ignore them
+		if host == 'outlook.com':
+			continue
+
 		#have request/response fully built
 		if (inResponse and line.startswith("--EOF")) or (inRequest and line.startswith("--EOF")):
 			if host in third_party:
@@ -105,6 +154,41 @@ for filename in os.listdir(os.curdir):
 				http_count += 1
 			## do text analysis here since we have the request/response fully built
 			if any(pii_type in message_body.lower() for pii_type in pii_types):
+
+				# count PII by category
+				if any(pii in message_body.lower() for pii in email_pii):
+					email_cnt += 1
+				elif any(pii in message_body.lower() for pii in birthday_pii):
+					birthday_cnt += 1
+				elif any(pii in message_body.lower() for pii in location_pii):
+					location_cnt += 1
+				elif any(pii in message_body.lower() for pii in gender_pii):
+					gender_cnt += 1
+				elif any(pii in message_body.lower() for pii in name_pii):
+					name_cnt += 1
+				elif any(pii in message_body.lower() for pii in zip_pii):
+					zip_cnt += 1
+				elif any(pii in message_body.lower() for pii in phone_pii):
+					phone_cnt += 1
+
+				# count apps by category
+				if any(name in app_name for name in entertainment):
+					entertainment_cnt += 1
+				elif any(name in app_name for name in business):
+					business_cnt += 1
+				elif any(name in app_name for name in health_fitness):
+					health_fitness_cnt += 1
+				elif any(name in app_name for name in lifestyle):
+					lifestyle_cnt += 1
+				elif any(name in app_name for name in medical):
+					medical_cnt += 1
+				elif any(name in app_name for name in social):
+					social_cnt += 1
+				elif any(name in app_name for name in navigation):
+					navigation_cnt += 1
+				elif any(name in app_name for name in photo_video):
+					photo_video_cnt += 1
+
 
 				pii_apps.add(app_name)
 				pii_hosts.add(host)
@@ -193,15 +277,13 @@ r = set(B_sensitive) - l
 
 pos = OrderedDict({})
 
-#pos.update((node, (1, index)) for index, node in enumerate(l))
-pos.update((node, [1, i*(2.5)]) for i,node in enumerate(l))
+pos.update((node, [1, i*(2.6)]) for i,node in enumerate(l))
 pos.update((node, (2, index)) for index, node in enumerate(r))
 
 d = nx.degree(B_sensitive)
 d = [(d[node]+1) * 30 for node in B_sensitive.nodes()]
-# print(d)
 
-nx.draw(B_sensitive, pos=pos, with_labels=False, node_size=d, linewidths=.2, width=.2, font_size=6)
+nx.draw(B_sensitive, pos=pos, with_labels=False, node_size=d, linewidths=.2, width=.4, font_size=6)
 
 for node in list(pos.items()):
 	if node[0] in pii_apps:
@@ -209,14 +291,13 @@ for node in list(pos.items()):
 	else:
 		plt.text(node[1][0]+0.05,node[1][1],s=node[0],fontsize=7,verticalalignment='center')
 plt.xlim((0.5,2.5))
-plt.savefig("graph_pii.png",dpi=300)
 plt.show()
 
 	
 print('Results:')
-print(len(pii_apps))
-print(len(pii_hosts))
-print(len(pii_edges))
+print(str(len(pii_apps)) + ' apps')
+print(str(len(pii_hosts)) + ' hosts')
+print(str(len(pii_edges)) + ' edges')
 
 third_party_count_pii = 0
 for app, third_parties in app_to_third_parties_pii.items():
@@ -234,7 +315,9 @@ servers_count_pii = 0
 for app, servers in app_to_servers_pii.items():
 	servers_count_pii += len(servers)
 
-print('http count:'+ str(http_count))
+
+print('\n\nMETRICS')
+print('http count: '+ str(http_count))
 print('https count: ' + str(https_count))
 print('third party connections with pii: ' + str(third_party_count_pii))
 print('third party connections: ' + str(third_party_count))
@@ -242,3 +325,46 @@ print('server connections: ' + str(servers_count))
 print('server connections with pii ' + str(servers_count_pii))
 print('app count: ' + str(len(apps)))
 #print(pii_hosts)
+
+# plot pii categorical breakdown
+pii_counts = np.array([email_cnt,birthday_cnt,phone_cnt,location_cnt,gender_cnt,name_cnt,zip_cnt])
+total_pii = np.sum(pii_counts)
+pii_names = ['email','birthday','phone number','location','gender','name','zip code']
+indices = np.argsort(np.array(pii_counts))
+plt.barh(y=range(len(pii_counts)),width=np.array(pii_counts)[indices],tick_label=np.array(pii_names)[indices],color='red')
+plt.ylabel('PII Category')
+plt.xlabel('Number of Times Shared')
+plt.title('PII Transmissions by Category')
+plt.show()
+
+print('\n\nPII CATEGORY COUNTS')
+print('email count: ' + str(email_cnt))
+print('birthday count: ' + str(birthday_cnt))
+print('phone count: ' + str(phone_cnt))
+print('location count: ' + str(location_cnt))
+print('gender count: ' + str(gender_cnt))
+print('name count: ' + str(name_cnt))
+print('zip count: ' + str(zip_cnt))
+print('total pii: ' + str(total_pii))
+
+# plot app categorical breakdown
+app_pii_counts = np.array([business_cnt,entertainment_cnt,health_fitness_cnt,lifestyle_cnt,medical_cnt,
+						social_cnt,navigation_cnt,photo_video_cnt])
+total_app_pii = np.sum(app_pii_counts)
+indices = np.argsort(np.array(app_pii_counts))
+plt.barh(y=range(len(app_pii_counts)),width=np.array(app_pii_counts)[indices],tick_label=np.array(app_categories)[indices],color='red')
+plt.ylabel('App Category')
+plt.xlabel('Number of PII Transmissions')
+plt.title('PII Transmissions by App Category')
+plt.show()
+
+print('\n\nAPP PII CATEGORY COUNTS')
+print('business count: ' + str(business_cnt))
+print('entertainment count: ' + str(entertainment_cnt))
+print('health_fitness count: ' + str(health_fitness_cnt))
+print('lifestyle count: ' + str(lifestyle_cnt))
+print('medical count: ' + str(medical_cnt))
+print('social count: ' + str(social_cnt))
+print('navigation count: ' + str(navigation_cnt))
+print('photo_video count: ' + str(photo_video_cnt))
+print('total app pii: ' + str(total_app_pii))
