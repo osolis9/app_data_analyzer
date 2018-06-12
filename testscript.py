@@ -8,6 +8,7 @@ import numpy as np
 import networkx as nx
 from networkx.algorithms import bipartite
 import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 
 names = ['omar', 'solis', 'scott', 'buttinger']
 emails = ['omarsolis4@gmail.com', 'sbuttinger19@gmail.com']
